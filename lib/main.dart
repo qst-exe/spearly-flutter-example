@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,6 +53,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  WebViewController? _controller;
 
   void _incrementCounter() {
     setState(() {
@@ -102,6 +107,17 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            // TODO: コメントアウトで有効化
+            SizedBox(
+              height: 500,
+              child: WebView(
+                javascriptMode: JavascriptMode.unrestricted,
+                onWebViewCreated: (WebViewController webViewController) async {
+                  _controller = webViewController;
+                  await _loadHtmlFromAssets();
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -111,5 +127,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  Future _loadHtmlFromAssets() async {
+    String fileText = await rootBundle.loadString('assets/detail.html');
+    _controller?.loadUrl(Uri.dataFromString(fileText,
+            mimeType: 'text/html', encoding: Encoding.getByName('utf-8'))
+        .toString());
   }
 }
